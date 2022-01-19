@@ -1,24 +1,25 @@
 "use strict"
 
 // Main function. Set small timeout to let tasks/projects load.
-setTimeout(() => {}, 1000)
+setTimeout(createButton, 1000)
 
 function createButton() {
-  togglbutton.render(".nowdothis .ndt-text:not(.toggl)", { observe: true }, function (elem) {
+  togglbutton.render(".timerBox:not(.toggl)", { observe: true }, function (elem) {
+    const togglDiv = document.createElement("div")
+
+    togglDiv.style.display = "inline-block"
+    togglDiv.style.paddingRight = "10px"
+
     const link = togglbutton.createTimerLink({
       description: getTaskText(),
       projectName: getProjectName(),
       tags: ["Complice"],
+      // className: "complice",
+      // buttonType: "minimal",
     })
-    elem.appendChild(link)
-    link.addEventListener("click", () => {
-      link.remove()
-      // Fix modal styling bug this causes
-      setTimeout(() => {
-        const modal = document.querySelector("#toggl-button-edit-form")
-        modal.remove()
-      }, 500)
-    })
+
+    togglDiv.appendChild(link)
+    elem.prepend(togglDiv)
   })
 }
 
@@ -27,16 +28,16 @@ const getTaskText = () => {
   return taskText.substring(taskText.lastIndexOf(")") + 1).trim()
 }
 
-const getTaskGoal = () => {
-  const taskText = document.querySelector(".nowdothis .ndt-text").innerText
-  const goalNumber = taskText.indexOf("(") == -1 ? taskText[0] : taskText[1]
-
-  return goalNumber
-}
-
 const getProjectName = () => {
   const goals = Array.from(document.querySelectorAll(".goalsbar-name"))
   const goalNames = goals.map((goal) => goal.innerText)
   // subtract one for proper array index
   return goalNames[getTaskGoal() - 1]
+}
+
+const getTaskGoal = () => {
+  const taskText = document.querySelector(".nowdothis .ndt-text").innerText
+  const goalNumber = taskText.indexOf("(") == -1 ? taskText[0] : taskText[1]
+
+  return goalNumber
 }
