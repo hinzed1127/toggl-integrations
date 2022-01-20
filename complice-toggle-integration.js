@@ -11,7 +11,7 @@ function createButton() {
 
     const link = togglbutton.createTimerLink({
       description: await getTaskText(),
-      projectName: getProjectName(),
+      projectName: await getProjectName(),
       tags: ["Complice"],
       // className: "complice",
       // buttonType: "minimal",
@@ -23,25 +23,29 @@ function createButton() {
 }
 
 const getTaskText = async () => {
-  const taskText = await waitForElementWithRegex(".nowdothis .ndt-text span", /^\d★?\).*/).then((element) => {
+  const taskText = await waitForElementWithRegex(".nowdothis .ndt-text span", /^\(?\d★?\).*/).then((element) => {
     const elementText = element.innerText
-    return elementText.substring(elementText.lastIndexOf(")") + 1).trim()
+    return elementText.substring(elementText.indexOf(")") + 1).trim()
   })
-
   return taskText
 }
 
-const getProjectName = () => {
-  const goals = Array.from(document.querySelectorAll(".goalsbar-name"))
-  const goalNames = goals.map((goal) => goal.innerText)
-  // subtract one for proper array index
-  return goalNames[getTaskGoal() - 1]
+const getProjectName = async () => {
+  const project = await waitForElement(".goalsbar-name").then(async () => {
+    const goals = Array.from(document.querySelectorAll(".goalsbar-name"))
+    const goalNames = goals.map((goal) => goal.innerText)
+    // subtract one for proper array index
+    const goalNumber = await getTaskGoal()
+    return goalNames[(await getTaskGoal()) - 1]
+  })
+  return project
 }
 
-const getTaskGoal = () => {
-  const taskText = document.querySelector(".nowdothis .ndt-text").innerText
-  const goalNumber = taskText.indexOf("(") == -1 ? taskText[0] : taskText[1]
-
+const getTaskGoal = async () => {
+  const goalNumber = await waitForElementWithRegex(".nowdothis .ndt-text span", /^\(?\d★?\).*/).then((element) => {
+    const taskText = element.innerText
+    return taskText.indexOf("(") == -1 ? taskText[0] : taskText[1]
+  })
   return goalNumber
 }
 
