@@ -1,17 +1,16 @@
 "use strict"
 
-// Main function. Set small timeout to let tasks/projects load.
-setTimeout(createButton, 1000)
+waitForElm("#next").then(createButton)
 
 function createButton() {
-  togglbutton.render(".timerBox:not(.toggl)", { observe: true }, function (elem) {
+  togglbutton.render(".timerBox:not(.toggl)", { observe: true }, async function (elem) {
     const togglDiv = document.createElement("div")
 
     togglDiv.style.display = "inline-block"
     togglDiv.style.paddingRight = "10px"
 
     const link = togglbutton.createTimerLink({
-      description: getTaskText(),
+      description: await getTaskText(),
       projectName: getProjectName(),
       tags: ["Complice"],
       // className: "complice",
@@ -23,9 +22,13 @@ function createButton() {
   })
 }
 
-const getTaskText = () => {
-  const taskText = document.querySelector(".nowdothis .ndt-text").innerText
-  return taskText.substring(taskText.lastIndexOf(")") + 1).trim()
+const getTaskText = async () => {
+  const taskText = await waitForElmWithRegex(".nowdothis .ndt-text span", /^\d★?\).*/).then((element) => {
+    const elementText = element.innerText
+    return elementText.substring(elementText.lastIndexOf(")") + 1).trim()
+  })
+
+  return taskText
 }
 
 const getProjectName = () => {
@@ -40,4 +43,45 @@ const getTaskGoal = () => {
   const goalNumber = taskText.indexOf("(") == -1 ? taskText[0] : taskText[1]
 
   return goalNumber
+}
+
+// Taken from https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
+function waitForElm(selector) {
+  return new Promise((resolve) => {
+    if (document.querySelector(selector)) {
+      return resolve(document.querySelector(selector))
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      if (document.querySelector(selector)) {
+        resolve(document.querySelector(selector))
+        observer.disconnect()
+      }
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+  })
+}
+
+function waitForElmWithRegex(selector, regex) {
+  return new Promise((resolve) => {
+    if (document.querySelector(selector) && regex.test(document.querySelector(selector).innerText)) {
+      return resolve(document.querySelector(selector))
+    }
+
+    const observer = new MutationObserver((mutations) => {
+      if (document.querySelector(selector) && regex.test(document.querySelector(selector).innerText)) {
+        resolve(document.querySelector(selector))
+        observer.disconnect()
+      }
+    })
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    })
+  })
 }
