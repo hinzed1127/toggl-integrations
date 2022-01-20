@@ -1,6 +1,6 @@
 "use strict"
 
-waitForElm("#next").then(createButton)
+waitForElement("#next").then(createButton)
 
 function createButton() {
   togglbutton.render(".timerBox:not(.toggl)", { observe: true }, async function (elem) {
@@ -23,7 +23,7 @@ function createButton() {
 }
 
 const getTaskText = async () => {
-  const taskText = await waitForElmWithRegex(".nowdothis .ndt-text span", /^\d★?\).*/).then((element) => {
+  const taskText = await waitForElementWithRegex(".nowdothis .ndt-text span", /^\d★?\).*/).then((element) => {
     const elementText = element.innerText
     return elementText.substring(elementText.lastIndexOf(")") + 1).trim()
   })
@@ -46,7 +46,7 @@ const getTaskGoal = () => {
 }
 
 // Taken from https://stackoverflow.com/questions/5525071/how-to-wait-until-an-element-exists
-function waitForElm(selector) {
+function waitForElement(selector) {
   return new Promise((resolve) => {
     if (document.querySelector(selector)) {
       return resolve(document.querySelector(selector))
@@ -66,7 +66,7 @@ function waitForElm(selector) {
   })
 }
 
-function waitForElmWithRegex(selector, regex) {
+function waitForElementWithRegex(selector, regex) {
   return new Promise((resolve) => {
     if (document.querySelector(selector) && regex.test(document.querySelector(selector).innerText)) {
       return resolve(document.querySelector(selector))
